@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-export default class ViewerCore {
+export default class CardA {
   constructor({ renderer, canvas }) {
     this.scene = null
     this.camera = null

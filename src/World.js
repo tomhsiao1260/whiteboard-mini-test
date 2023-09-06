@@ -50,40 +50,22 @@ export default class World {
 
     // generate a card when clicking
     this.time.on('mouseDown', () => {
-      if (!this.controls.spacePress) return
+      let mode
+      console.log(this.controls.numKeyPress)
+      if (this.controls.numKeyPress[0]) mode = 'cardA'
+      if (this.controls.numKeyPress[1]) mode = 'cardB'
+      if (!mode) return
 
       const intersects = this.controls.getRayCast([ this.whiteBoard.container ])
       if (!intersects.length) return
 
       const pos = intersects[0].point
       const center = new THREE.Vector3(pos.x, pos.y, 0)
-      const card = this.cardSet.create(this.controls.mouse, center)
+      const card = this.cardSet.create(mode, this.controls.mouse, center)
       this.container.add(card)
 
       this.time.trigger('tick')
     })
-
-    // show mouse pointer when hoving on a card
-    this.time.on('mouseMove', () => {
-      const intersects = this.controls.getRayCast(this.cardSet.list)
-
-      if (!intersects.length) {
-        document.body.style.cursor = 'auto'
-        this.camera.controls.enablePan = true
-        return
-      }
-      document.body.style.cursor = 'pointer'
-      this.camera.controls.enablePan = false
-
-      const card = intersects[0].object
-      this.cardSet.focusCard = card
-      this.cardSet.updateDOM(card)
-    })
-
-    // update card's scene
-    this.cardSet.viewer.controls.addEventListener('change', () => this.cardSet.updateAllBuffer())
-    // make div window fit into the current focusing card
-    this.time.on('tick', () => { this.cardSet.updateDOM(this.cardSet.focusCard) })
   }
 }
 
