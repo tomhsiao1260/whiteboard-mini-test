@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import CardA from './core/CardA'
-import CardB from './core/CardB'
 import { CopyShader } from './core/CopyShader'
 
 export default class CardSet {
@@ -11,27 +10,19 @@ export default class CardSet {
     this.renderer = _option.renderer
 
     this.list = []
+    this.targetCard = null
   }
 
-  setDOM() {
-    const cardDOM = document.createElement('div')
+  create(mode, dom, mouse, center) {
+    let id = null
+    if (mode === 'cardA') id = '20230503225234'
+    if (mode === 'cardB') id = '20230504093154'
+    const viewer = new CardA({ renderer: this.renderer, canvas: dom, id })
 
-    cardDOM.className = 'cardDOM'
-    cardDOM.style.backgroundColor = 'rgba(0, 0, 0, 0.0)'
-    cardDOM.style.border = '1px solid white'
-    cardDOM.style.display = 'none'
-    cardDOM.style.position = 'absolute'
-    document.body.appendChild(cardDOM)
-
-    return cardDOM
-  }
-
-  create(mode, mouse, center) {
-    let viewer
-    const dom = this.setDOM()
-
-    if (mode === 'cardA') viewer = new CardA({ renderer: this.renderer, canvas: dom })
-    if (mode === 'cardB') viewer = new CardB({ renderer: this.renderer, canvas: dom })
+    viewer.controls.addEventListener('change', () => {
+      this.render()
+      this.time.trigger('tick')
+    })
 
     const geometry = new THREE.PlaneGeometry(1, 1)
     const material = new CopyShader()
@@ -50,7 +41,6 @@ export default class CardSet {
   updateCanvas(card) {
     if (!card) return
 
-    const { width, height } = this.sizes.viewport
     const { center, dom, w, h } = card.userData
 
     const bl = new THREE.Vector3(center.x - w / 2, center.y - h / 2, 0)
@@ -59,15 +49,13 @@ export default class CardSet {
     const pbl = bl.clone().project(this.camera.instance)
     const ptr = tr.clone().project(this.camera.instance)
 
-    dom.style.left = `${ (pbl.x + 1) * width * 0.5 }px`
-    dom.style.bottom = `${ (pbl.y + 1) * height * 0.5 }px`
-    dom.style.width = `${ (ptr.x - pbl.x) * width * 0.5 }px`
-    dom.style.height = `${ (ptr.y - pbl.y) * height * 0.5 }px`
-    dom.style.display = 'inline'
+    return [ pbl, ptr ]
   }
 
-  hideCanvas(card) {
-    const { dom } = card.userData
-    dom.style.display = 'none'
+  render() {
+    if (!this.targetCard) return
+
+    const { viewer } = this.targetCard.userData
+    viewer.render()
   }
 }

@@ -60,29 +60,66 @@ export default class World {
 
       const pos = intersects[0].point
       const center = new THREE.Vector3(pos.x, pos.y, 0)
-      const card = this.cardSet.create(mode, this.controls.mouse, center)
+      const dom = this.setDOM()
+      const card = this.cardSet.create(mode, dom, this.controls.mouse, center)
       this.container.add(card)
 
       this.time.trigger('tick')
     })
 
-    this.time.on('mouseMove', () => {
-      if (!this.controls.spacePress) return
+    // make the whiteboard controllable (all scene in cards remains unchanged)
+    this.time.on('spaceUp', () => {
+      document.body.style.cursor = 'auto'
+      this.camera.controls.enabled = true
+      this.cardSet.targetCard = null
+
+      this.cardSet.list.forEach((card) => {
+        const { dom } = card.userData
+        dom.style.display = 'none'
+      })
+    })
+
+    // fix the whiteboard (scene in selected card is controllable)
+    this.time.on('spaceDown', () => {
+      document.body.style.cursor = 'auto'
+      this.camera.controls.enabled = false
 
       const intersects = this.controls.getRayCast(this.cardSet.list)
       if (!intersects.length) return
+      document.body.style.cursor = 'pointer'
 
-      this.cardSet.updateCanvas(intersects[0].object)
+      const card = intersects[0].object
+      const { dom, viewer } = card.userData
+      this.cardSet.targetCard = card
+
+      this.cardSet.list.forEach((c) => {
+        const v = c.userData.viewer
+        v.controls.enabled = false
+      })
+      viewer.controls.enabled = true
+
+      const [ pbl, ptr ] = this.cardSet.updateCanvas(card)
+      const { width, height } = this.sizes.viewport
+
+      dom.style.left = `${ (pbl.x + 1) * width * 0.5 }px`
+      dom.style.bottom = `${ (pbl.y + 1) * height * 0.5 }px`
+      dom.style.width = `${ (ptr.x - pbl.x) * width * 0.5 }px`
+      dom.style.height = `${ (ptr.y - pbl.y) * height * 0.5 }px`
+      dom.style.display = 'inline'
     })
-    // hide canvas
-    // this.time.on('mouseMove', () => {
-    //   if (!this.controls.spacePress) return
+  } 
+ 
+  setDOM() {
+    const cardDOM = document.createElement('div')
 
-    //   const intersects = this.controls.getRayCast(this.cardSet.list)
-    //   if (!intersects.length) return
+    cardDOM.className = 'cardDOM'
+    cardDOM.style.backgroundColor = 'rgba(0, 0, 0, 0.0)'
+    cardDOM.style.border = '1px solid white'
+    cardDOM.style.display = 'none'
+    cardDOM.style.position = 'absolute'
+    document.body.appendChild(cardDOM)
 
-    //   this.cardSet.updateCanvas(intersects[0].object)
-    // })
+    return cardDOM
   }
 }
 
