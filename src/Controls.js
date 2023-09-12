@@ -46,7 +46,6 @@ export default class Controls {
       this.numKeyPress[1] = (e.code === 'Digit2')
     })
     window.addEventListener('keyup', (e) => {
-      console.log(e.code)
       this.spacePress = false
       this.numKeyPress[0] = false
       this.numKeyPress[1] = false

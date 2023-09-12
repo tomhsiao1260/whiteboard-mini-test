@@ -51,7 +51,6 @@ export default class World {
     // generate a card when clicking
     this.time.on('mouseDown', () => {
       let mode
-      console.log(this.controls.numKeyPress)
       if (this.controls.numKeyPress[0]) mode = 'cardA'
       if (this.controls.numKeyPress[1]) mode = 'cardB'
       if (!mode) return
@@ -66,6 +65,24 @@ export default class World {
 
       this.time.trigger('tick')
     })
+
+    this.time.on('mouseMove', () => {
+      if (!this.controls.spacePress) return
+
+      const intersects = this.controls.getRayCast(this.cardSet.list)
+      if (!intersects.length) return
+
+      this.cardSet.updateCanvas(intersects[0].object)
+    })
+    // hide canvas
+    // this.time.on('mouseMove', () => {
+    //   if (!this.controls.spacePress) return
+
+    //   const intersects = this.controls.getRayCast(this.cardSet.list)
+    //   if (!intersects.length) return
+
+    //   this.cardSet.updateCanvas(intersects[0].object)
+    // })
   }
 }
 
